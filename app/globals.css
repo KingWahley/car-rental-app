@@ -1,0 +1,67 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #efefef;
+  color: #111111;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #c4c4c4 #eeeeee;
+}
+
+html::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: #eeeeee;
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #cfcfcf 0%, #b7b7b7 100%);
+  border: 2px solid #eeeeee;
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #bdbdbd 0%, #a9a9a9 100%);
+}
+
+.themed-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #c4c4c4 #eeeeee;
+}
+
+.themed-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.themed-scrollbar::-webkit-scrollbar-track {
+  background: #eeeeee;
+  border-radius: 999px;
+}
+
+.themed-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #cfcfcf 0%, #b7b7b7 100%);
+  border: 2px solid #eeeeee;
+  border-radius: 999px;
+}
+
+.themed-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #bdbdbd 0%, #a9a9a9 100%);
+}

@@ -1,9 +1,24 @@
-﻿export default function VehicleCard({ vehicle }) {
+import { motion } from 'framer-motion';
+
+export default function VehicleCard({ vehicle, onSelect, variants }) {
   const distanceMeters = vehicle.distanceMeters ?? 120;
   const walkMinutes = vehicle.walkMinutes ?? 4;
+  const handleSelect = onSelect ?? (() => {});
 
   return (
-    <article className="rounded-[10px] bg-[#f5f5f5] border border-[#ececec] px-[12px] pt-[10px] pb-[12px] transition-shadow hover:shadow-sm">
+    <motion.article
+      role="button"
+      tabIndex={0}
+      variants={variants}
+      onClick={() => handleSelect(vehicle)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleSelect(vehicle);
+        }
+      }}
+      className="rounded-[10px] bg-[#f5f5f5] border border-[#ececec] px-[12px] pt-[10px] pb-[12px] transition-shadow hover:shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111111]/35"
+    >
       <div className="flex items-center justify-between text-[10px] leading-none text-[#464646] mb-[10px]">
         <div className="flex items-center gap-[14px]">
           <span className="inline-flex items-center gap-[4px]">
@@ -11,12 +26,16 @@
             {distanceMeters}m ({walkMinutes} min)
           </span>
           <span className="inline-flex items-center gap-[4px]">
-            <span className="text-[#f0c343] leading-none">★</span>
+            <span className="text-[#f0c343] leading-none">*</span>
             {vehicle.rating} ({vehicle.reviews})
           </span>
         </div>
 
-        <button aria-label="Add to favourites" className="text-[#1f1f1f] leading-none">
+        <button
+          aria-label="Add to favourites"
+          onClick={(event) => event.stopPropagation()}
+          className="text-[#1f1f1f] leading-none"
+        >
           <HeartIcon />
         </button>
       </div>
@@ -34,13 +53,11 @@
         </div>
 
         <div className="whitespace-nowrap pb-[2px]">
-          <span className="text-sm leading-none font-semibold text-[#121212]">
-            ${vehicle.price.toFixed(2)}
-          </span>
+          <span className="text-sm leading-none font-semibold text-[#121212]">${vehicle.price.toFixed(2)}</span>
           <span className="text-xs text-[#8a8a8a]"> / hour</span>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -69,25 +86,6 @@ function HeartIcon() {
     </svg>
   );
 }
-{/* <div className=" grid lg:grid-cols-2 gap-8 items-end mt-auto pb-4">
-            <div>
-              <p className="text-base text-[#8a8c97] mb-4">We&apos;re chosen by the best</p>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl leading-[0.95] font-medium tracking-[-0.02em] text-[#252734]">
-                Discover new
-                <br />
-                routes in <span className="text-[#9a9ca7]">comfort</span>
-              </h1>
-              <div className="mt-8 flex items-center gap-4">
-                <button className="h-12 px-8 rounded-xl bg-[#23242d] text-white text-base">Book your Ride</button>
-                <Link href="/vehicles" className="h-12 px-8 rounded-xl border border-[#dddde4] bg-white text-[#2d2f39] text-base flex items-center">
-                  View cars
-                </Link>
-              </div>
-            </div>
 
-            <p className="text-lg md:text-xl leading-[1.35] text-[#555862] lg:text-right">
-              Rent a reliable car and explore the world on your own terms.
-              Enjoy the freedom to travel wherever you want, whenever you want,
-              <span className="text-[#9a9ca7]"> in comfort and style.</span>
-            </p>
-          </div> */}
+
+

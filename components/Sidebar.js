@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 const defaultFilters = {
@@ -22,6 +23,60 @@ const defaultOptions = {
   modelYears: [],
   bodyTypes: [],
   fuelTypes: [],
+};
+
+const filterSectionsVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const filterSectionVariants = {
+  hidden: { opacity: 0, y: 28, scale: 0.97, filter: 'blur(3px)' },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const sectionContentVariants = {
+  hidden: { height: 0, opacity: 0, y: -8 },
+  show: {
+    height: 'auto',
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.32,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+  exit: {
+    height: 0,
+    opacity: 0,
+    y: -8,
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 1, 1],
+    },
+  },
+};
+
+const filtersPanelTransition = {
+  type: 'spring',
+  stiffness: 260,
+  damping: 28,
+  mass: 0.9,
 };
 
 export default function Sidebar({
@@ -127,20 +182,42 @@ export default function Sidebar({
       </div>
 
       {isVehiclesPage ? (
-        <div
-          className={`bg-[#efefef] py-6 transition-all duration-300 overflow-hidden ${
-            filtersCollapsed ? 'w-[80px] px-3' : 'w-[404px] px-6'
-          }`}
+        <motion.div
+          animate={{
+            width: filtersCollapsed ? 80 : 404,
+            paddingLeft: filtersCollapsed ? 12 : 24,
+            paddingRight: filtersCollapsed ? 12 : 24,
+          }}
+          transition={filtersPanelTransition}
+          className="bg-[#efefef] py-6 overflow-hidden"
         >
           <div className="mb-7 flex items-center justify-between">
-            {filtersCollapsed ? null : (
-              <>
-                <h2 className="text-[32px] leading-none font-medium text-[#121212]">Filter by</h2>
-                <button onClick={handleReset} className="text-sm text-[#ababab] hover:text-[#8f8f8f]">
-                  Reset all
-                </button>
-              </>
-            )}
+            <AnimatePresence initial={false} mode="wait">
+              {!filtersCollapsed ? (
+                <motion.div
+                  key="filter-header-expanded"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center justify-between flex-1"
+                >
+                  <h2 className="text-[32px] leading-none font-medium text-[#121212]">Filter by</h2>
+                  <button onClick={handleReset} className="text-sm text-[#ababab] hover:text-[#8f8f8f]">
+                    Reset all
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.span
+                  key="filter-header-collapsed"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="block flex-1"
+                />
+              )}
+            </AnimatePresence>
 
             <button
               aria-label={filtersCollapsed ? 'Expand filters' : 'Collapse filters'}
@@ -152,13 +229,27 @@ export default function Sidebar({
           </div>
 
           <div className="h-[calc(100vh-96px)] overflow-y-auto pr-1 themed-scrollbar">
-            {filtersCollapsed ? (
-              <div className="h-full flex items-start justify-center pt-8">
-                <span className="-rotate-90 text-[11px] uppercase tracking-[0.2em] text-[#9a9a9a]">Filters</span>
-              </div>
-            ) : (
-              <>
-                <section className="pb-6 border-b border-[#e3e3e3]">
+            <AnimatePresence mode="wait" initial={false}>
+              {filtersCollapsed ? (
+                <motion.div
+                  key="filters-collapsed"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  className="h-full flex items-start justify-center pt-8"
+                >
+                  <span className="-rotate-90 text-[11px] uppercase tracking-[0.2em] text-[#9a9a9a]">Filters</span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="filters-expanded"
+                  variants={filterSectionsVariants}
+                  initial="hidden"
+                  animate="show"
+                  exit={{ opacity: 0, y: 10, transition: { duration: 0.16 } }}
+                >
+                <motion.section variants={filterSectionVariants} className="pb-6 border-b border-[#e3e3e3]">
                   <p className="mb-3 text-[13px] uppercase tracking-[0.06em] text-[#8c8c8c]">Rental Type</p>
                   <div className="flex gap-2">
                     <Tag active={activeFilters.rentalType === 'any'} onClick={() => handleChange('rentalType', 'any')}>
@@ -174,9 +265,9 @@ export default function Sidebar({
                       Per hour
                     </Tag>
                   </div>
-                </section>
+                </motion.section>
 
-                <section className="py-6 border-b border-[#e3e3e3]">
+                <motion.section variants={filterSectionVariants} className="py-6 border-b border-[#e3e3e3]">
                   <button
                     onClick={() => handleChange('availableNowOnly', !activeFilters.availableNowOnly)}
                     className="w-full flex items-center justify-between"
@@ -190,123 +281,190 @@ export default function Sidebar({
                       <span className="w-5 h-5 rounded-full bg-[#f4f4f4] border border-[#d8d8d8]" />
                     </div>
                   </button>
-                </section>
+                </motion.section>
 
-                <section className="py-6 border-b border-[#e3e3e3]">
+                <motion.section variants={filterSectionVariants} className="py-6 border-b border-[#e3e3e3]">
                   <SectionHeader
                     title="Price Range / hour"
                     open={openSections.price}
                     onClick={() => toggleSection('price')}
                   />
-                  {openSections.price ? (
-                    <PriceBlock
-                      priceMin={activeFilters.priceMin}
-                      priceMax={activeFilters.priceMax}
-                      bounds={activeOptions.priceBounds}
-                      onMinChange={setPriceMin}
-                      onMaxChange={setPriceMax}
-                    />
-                  ) : null}
-                </section>
-
-                <section className="py-5 border-b border-[#e3e3e3]">
-                  <SectionHeader title="Car Brand" open={openSections.brand} onClick={() => toggleSection('brand')} />
-                  {openSections.brand ? (
-                    <div className="mt-4 max-h-36 overflow-auto pr-1 space-y-2 themed-scrollbar">
-                      {activeOptions.brands.map((brand) => (
-                        <CheckboxRow
-                          key={brand}
-                          label={brand}
-                          checked={activeFilters.brands.includes(brand)}
-                          onToggle={() => handleToggleArray('brands', brand)}
+                  <AnimatePresence initial={false}>
+                    {openSections.price ? (
+                      <motion.div
+                        key="price-content"
+                        variants={sectionContentVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="overflow-hidden"
+                      >
+                        <PriceBlock
+                          priceMin={activeFilters.priceMin}
+                          priceMax={activeFilters.priceMax}
+                          bounds={activeOptions.priceBounds}
+                          onMinChange={setPriceMin}
+                          onMaxChange={setPriceMax}
                         />
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </motion.section>
 
-                <section className="py-5 border-b border-[#e3e3e3]">
+                <motion.section variants={filterSectionVariants} className="py-5 border-b border-[#e3e3e3]">
+                  <SectionHeader title="Car Brand" open={openSections.brand} onClick={() => toggleSection('brand')} />
+                  <AnimatePresence initial={false}>
+                    {openSections.brand ? (
+                      <motion.div
+                        key="brand-content"
+                        variants={sectionContentVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-4 max-h-36 overflow-auto pr-1 space-y-2 themed-scrollbar">
+                          {activeOptions.brands.map((brand) => (
+                            <CheckboxRow
+                              key={brand}
+                              label={brand}
+                              checked={activeFilters.brands.includes(brand)}
+                              onToggle={() => handleToggleArray('brands', brand)}
+                            />
+                          ))}
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </motion.section>
+
+                <motion.section variants={filterSectionVariants} className="py-5 border-b border-[#e3e3e3]">
                   <SectionHeader
                     title="Car Model & Year"
                     open={openSections.modelYear}
                     onClick={() => toggleSection('modelYear')}
                   />
-                  {openSections.modelYear ? (
-                    <div className="mt-4 max-h-36 overflow-auto pr-1 space-y-2 themed-scrollbar">
-                      {activeOptions.modelYears.map((modelYear) => (
-                        <CheckboxRow
-                          key={modelYear}
-                          label={modelYear}
-                          checked={activeFilters.modelYears.includes(modelYear)}
-                          onToggle={() => handleToggleArray('modelYears', modelYear)}
-                        />
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
+                  <AnimatePresence initial={false}>
+                    {openSections.modelYear ? (
+                      <motion.div
+                        key="model-year-content"
+                        variants={sectionContentVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-4 max-h-36 overflow-auto pr-1 space-y-2 themed-scrollbar">
+                          {activeOptions.modelYears.map((modelYear) => (
+                            <CheckboxRow
+                              key={modelYear}
+                              label={modelYear}
+                              checked={activeFilters.modelYears.includes(modelYear)}
+                              onToggle={() => handleToggleArray('modelYears', modelYear)}
+                            />
+                          ))}
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </motion.section>
 
-                <section className="py-6 border-b border-[#e3e3e3]">
+                <motion.section variants={filterSectionVariants} className="py-6 border-b border-[#e3e3e3]">
                   <SectionHeader title="Body Type" open={openSections.body} onClick={() => toggleSection('body')} />
-                  {openSections.body ? (
-                    <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
-                      {activeOptions.bodyTypes.map((type) => (
-                        <CheckboxRow
-                          key={type}
-                          label={type}
-                          checked={activeFilters.bodyTypes.includes(type)}
-                          onToggle={() => handleToggleArray('bodyTypes', type)}
-                        />
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
+                  <AnimatePresence initial={false}>
+                    {openSections.body ? (
+                      <motion.div
+                        key="body-content"
+                        variants={sectionContentVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
+                          {activeOptions.bodyTypes.map((type) => (
+                            <CheckboxRow
+                              key={type}
+                              label={type}
+                              checked={activeFilters.bodyTypes.includes(type)}
+                              onToggle={() => handleToggleArray('bodyTypes', type)}
+                            />
+                          ))}
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </motion.section>
 
-                <section className="py-6 border-b border-[#e3e3e3]">
+                <motion.section variants={filterSectionVariants} className="py-6 border-b border-[#e3e3e3]">
                   <SectionHeader
                     title="Transmission"
                     open={openSections.transmission}
                     onClick={() => toggleSection('transmission')}
                   />
-                  {openSections.transmission ? (
-                    <div className="mt-4 flex gap-2">
-                      <Tag active={activeFilters.transmission === 'any'} onClick={() => handleChange('transmission', 'any')}>
-                        Any
-                      </Tag>
-                      <Tag
-                        active={activeFilters.transmission === 'Automatic'}
-                        onClick={() => handleChange('transmission', 'Automatic')}
+                  <AnimatePresence initial={false}>
+                    {openSections.transmission ? (
+                      <motion.div
+                        key="transmission-content"
+                        variants={sectionContentVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="overflow-hidden"
                       >
-                        Automatic
-                      </Tag>
-                      <Tag
-                        active={activeFilters.transmission === 'Manual'}
-                        onClick={() => handleChange('transmission', 'Manual')}
-                      >
-                        Manual
-                      </Tag>
-                    </div>
-                  ) : null}
-                </section>
+                        <div className="mt-4 flex gap-2">
+                          <Tag active={activeFilters.transmission === 'any'} onClick={() => handleChange('transmission', 'any')}>
+                            Any
+                          </Tag>
+                          <Tag
+                            active={activeFilters.transmission === 'Automatic'}
+                            onClick={() => handleChange('transmission', 'Automatic')}
+                          >
+                            Automatic
+                          </Tag>
+                          <Tag
+                            active={activeFilters.transmission === 'Manual'}
+                            onClick={() => handleChange('transmission', 'Manual')}
+                          >
+                            Manual
+                          </Tag>
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </motion.section>
 
-                <section className="py-6">
+                <motion.section variants={filterSectionVariants} className="py-6">
                   <SectionHeader title="Fuel Type" open={openSections.fuel} onClick={() => toggleSection('fuel')} />
-                  {openSections.fuel ? (
-                    <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
-                      {activeOptions.fuelTypes.map((type) => (
-                        <CheckboxRow
-                          key={type}
-                          label={type}
-                          checked={activeFilters.fuelTypes.includes(type)}
-                          onToggle={() => handleToggleArray('fuelTypes', type)}
-                        />
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
-              </>
-            )}
+                  <AnimatePresence initial={false}>
+                    {openSections.fuel ? (
+                      <motion.div
+                        key="fuel-content"
+                        variants={sectionContentVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
+                          {activeOptions.fuelTypes.map((type) => (
+                            <CheckboxRow
+                              key={type}
+                              label={type}
+                              checked={activeFilters.fuelTypes.includes(type)}
+                              onToggle={() => handleToggleArray('fuelTypes', type)}
+                            />
+                          ))}
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </motion.section>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       ) : null}
     </aside>
   );

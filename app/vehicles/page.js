@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import DashboardShell from '../../components/DashboardShell';
 import VehicleCard from '../../components/VehicleCard';
@@ -41,7 +41,6 @@ const cardItemVariants = {
 
 export default function VehiclesPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -116,13 +115,14 @@ export default function VehiclesPage() {
   );
 
   useEffect(() => {
-    if (searchParams.get('filters') === '1') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('filters') === '1') {
       setMobileFiltersOpen(true);
     }
-  }, [searchParams]);
+  }, []);
 
   function closeMobileFilters() {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete('filters');
     const nextQuery = params.toString();
     router.replace(nextQuery ? `/vehicles?${nextQuery}` : '/vehicles');
